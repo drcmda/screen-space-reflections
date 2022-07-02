@@ -39,7 +39,7 @@ void main() {
 #endif
 
 #if RENDER_MODE == MODE_DEFAULT
-    gl_FragColor = vec4(inputTexel.rgb + reflectionClr, blurMix);
+    gl_FragColor = vec4(inputTexel.rgb + reflectionClr, 1.);
 #endif
 
 #if RENDER_MODE == MODE_REFLECTIONS
