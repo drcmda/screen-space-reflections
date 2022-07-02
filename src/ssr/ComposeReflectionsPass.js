@@ -40,7 +40,7 @@ export class ComposeReflectionsPass extends Pass {
                     vec4 inputTexel = texture2D(inputBuffer, vUv);
                     vec4 lastFrameReflectionsTexel = texture2D(lastFrameReflectionsBuffer, vUv);
 
-                    gl_FragColor = vec4((inputTexel.rgb + lastFrameReflectionsTexel.rgb) / 2., inputTexel.a);
+                    gl_FragColor = (inputTexel + lastFrameReflectionsTexel) / 2.;
                 }
             `
 		})

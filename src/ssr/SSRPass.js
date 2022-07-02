@@ -125,7 +125,7 @@ export class SSRPass extends Pass {
 		this.fullscreenMaterial.uniforms.lastFrameReflectionsBuffer.value =
 			this.reflectionsPass.framebufferTexture
 		this.fullscreenMaterial.uniforms.reflectionsBuffer.value =
-			this.reflectionsPass.renderTarget.texture
+			this.composeReflectionsPass.renderTarget.texture
 		this.fullscreenMaterial.uniforms.blurredReflectionsBuffer.value =
 			blurredReflectionsBuffer
 		this.fullscreenMaterial.uniforms.samples.value =
