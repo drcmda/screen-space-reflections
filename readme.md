@@ -75,8 +75,8 @@ const options = {
 	blurHeight: window.innerHeight,
 	rayStep: 0.1,
 	intensity: 1,
-	power: 1,
 	depthBlur: 0.1,
+	maxBlur: 1,
 	enableJittering: false,
 	jitter: 0.1,
 	jitterSpread: 0.1,
@@ -113,9 +113,9 @@ Description:
 
 - `intensity`: the intensity of the reflections
 
-- `power`: the power by which the reflections should be potentiated; higher values will give a more intense and vibrant look
-
 - `depthBlur`: how much deep reflections will be blurred (as reflections become blurrier the further away the object they are reflecting is)
+
+- `maxBlur`: the maximum blur mix value of a reflection
 
 - `enableJittering`: whether jittering is enabled; jittering will randomly jitter the reflections resulting in a more noisy but overall more realistic look, enabling jittering can be expensive depending on the view angle
 

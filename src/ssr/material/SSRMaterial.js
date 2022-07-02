@@ -10,7 +10,7 @@ export class SSRMaterial extends ShaderMaterial {
 
 			uniforms: {
 				inputBuffer: new Uniform(null),
-				lastFrameBuffer: new Uniform(null),
+				lastFrameReflectionsBuffer: new Uniform(null),
 				normalBuffer: new Uniform(null),
 				depthBuffer: new Uniform(null),
 				_projectionMatrix: new Uniform(new Matrix4()),
@@ -20,23 +20,18 @@ export class SSRMaterial extends ShaderMaterial {
 				cameraFar: new Uniform(0),
 				rayStep: new Uniform(0.1),
 				intensity: new Uniform(1),
-				power: new Uniform(1),
 				roughnessFadeOut: new Uniform(1),
 				rayFadeOut: new Uniform(0),
 				thickness: new Uniform(10),
 				ior: new Uniform(1.45),
 				maxDepthDifference: new Uniform(1),
-				maxDepth: new Uniform(0.9999),
+				maxDepth: new Uniform(1),
 				jitter: new Uniform(0.5),
 				jitterRough: new Uniform(0.5),
 				jitterSpread: new Uniform(1),
-				depthBlur: new Uniform(1)
-				// time: {
-				// 	get value() {
-				// 		return (Math.cos(performance.now() / 1000) + 1) / 2
-				// 	},
-				// 	set value(_) {}
-				// }
+				depthBlur: new Uniform(1),
+				maxBlur: new Uniform(1),
+				frameVal: new Uniform(0)
 			},
 
 			defines: {

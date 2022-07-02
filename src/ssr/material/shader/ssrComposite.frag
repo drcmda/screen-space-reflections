@@ -9,8 +9,11 @@
 #define SQRT_3 1.7320508075688772 + FLOAT_EPSILON
 
 uniform sampler2D inputBuffer;
+uniform sampler2D lastFrameReflectionsBuffer;
 uniform sampler2D reflectionsBuffer;
 uniform sampler2D blurredReflectionsBuffer;
+
+uniform float samples;
 
 varying vec2 vUv;
 
@@ -18,12 +21,17 @@ void main() {
     vec4 inputTexel = texture2D(inputBuffer, vUv);
 
     vec4 reflectionsTexel = texture2D(reflectionsBuffer, vUv);
-    vec3 reflectionClr = reflectionsTexel.xyz;
+    vec4 reflectionsTexel2 = texture2D(lastFrameReflectionsBuffer, vUv);
+
+    vec3 reflectionClr = reflectionsTexel.xyz + reflectionsTexel2.xyz;
+    reflectionClr /= 2.;
+
+    float blurMix = 0.;
 
 #ifdef USE_BLUR
     vec4 blurredReflectionsTexel = texture2D(blurredReflectionsBuffer, vUv);
 
-    float blurMix = reflectionsTexel.a;
+    blurMix = reflectionsTexel.a;
 
     reflectionClr = mix(reflectionClr, blurredReflectionsTexel.xyz, blurMix);
     reflectionClr = mix(reflectionClr, vec3(0.), 0.35 * pow(SQRT_3 - length(reflectionClr), 1.5));

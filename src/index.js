@@ -1,6 +1,8 @@
 import * as POSTPROCESSING from "postprocessing"
 import Stats from "stats.js"
 import * as THREE from "three"
+import { HalfFloatType } from "three"
+import { FloatType } from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js"
@@ -80,7 +82,9 @@ const controls = new OrbitControls(
 controls.maxDepth = 15
 window.controls = controls
 
-const composer = new POSTPROCESSING.EffectComposer(renderer)
+const composer = new POSTPROCESSING.EffectComposer(renderer, {
+	frameBufferType: HalfFloatType
+})
 window.composer = composer
 const renderPass = new POSTPROCESSING.RenderPass(scene, camera)
 composer.addPass(renderPass)
@@ -94,18 +98,19 @@ let params = {
 	width: window.innerWidth,
 	height: window.innerHeight,
 	useBlur: true,
-	blurKernelSize: POSTPROCESSING.KernelSize.SMALL,
+	blurKernelSize: 3,
 	blurWidth: 935,
-	blurHeight: 304,
+	blurHeight: 391,
 	rayStep: 0.534,
 	intensity: 1,
-	power: 1,
-	depthBlur: 0.11,
-	enableJittering: false,
-	jitter: 0.17,
-	jitterSpread: 0.59,
-	jitterRough: 0.8,
+	depthBlur: 0.26,
+	maxBlur: 0.85,
+	enableJittering: true,
+	jitter: 0,
+	jitterSpread: 2,
+	jitterRough: 2,
 	roughnessFadeOut: 1,
+	rayFadeOut: 1.03,
 	maxDepth: 1,
 	thickness: 3.5,
 	ior: 1.45,
@@ -114,6 +119,8 @@ let params = {
 	NUM_BINARY_SEARCH_STEPS: 7,
 	maxDepthDifference: 3,
 	stretchMissedRays: false,
+	floorRoughness: 1.45,
+	floorNormalScale: 0,
 	useMRT: true,
 	useNormalMap: true,
 	useRoughnessMap: true
@@ -133,8 +140,8 @@ const paramsDesert = {
 	blurHeight: 370,
 	rayStep: 0.205,
 	intensity: 0.7,
-	power: 1.1,
 	depthBlur: 0.11,
+	maxBlur: 1,
 	enableJittering: true,
 	jitter: 0.17,
 	jitterRough: 0,
@@ -217,7 +224,7 @@ gltflLoader.load(useDesert ? "desert.glb" : "scene.glb", asset => {
 			roughness: 0
 		})
 	)
-	box.position.set(2, 1, 5)
+	box.position.set(3, 1, 2)
 	box.updateMatrixWorld()
 
 	const box2 = new THREE.Mesh(
@@ -272,7 +279,6 @@ const useVideoBackgroundAndDancer = () => {
 	params.jitterRough = 0.36
 	params.jitterSpread = 0.34
 	params.intensity = 2
-	params.power = 1
 	params.roughnessFadeOut = 1
 	params.rayFadeOut = 1.14
 	params.MAX_STEPS = 64
@@ -356,8 +362,8 @@ optionsFolder.addInput(params, "width", { min: 0, max: 2000, step: 1 })
 optionsFolder.addInput(params, "height", { min: 0, max: 2000, step: 1 })
 optionsFolder.addInput(params, "rayStep", { min: 0.001, max: 5, step: 0.001 })
 optionsFolder.addInput(params, "intensity", { min: 0.1, max: 5, step: 0.1 })
-optionsFolder.addInput(params, "power", { min: 0.1, max: 5, step: 0.1 })
 optionsFolder.addInput(params, "depthBlur", { min: 0, max: 0.5, step: 0.01 })
+optionsFolder.addInput(params, "maxBlur", { min: 0, max: 1, step: 0.01 })
 optionsFolder.addInput(params, "maxDepthDifference", {
 	min: 0,
 	max: useDesert ? 20 : 8,
@@ -530,6 +536,9 @@ document.body.appendChild(stats.dom)
 
 const clock = new THREE.Clock()
 
+let lastWidth
+let lastHeight
+
 const loop = () => {
 	const dt = clock.getDelta()
 
@@ -540,11 +549,17 @@ const loop = () => {
 	if (skinMesh) {
 		mixer.update(dt)
 		skinMesh.updateMatrixWorld()
-		skinMesh = null
+		// skinMesh = null
 	}
 
 	if (ssrPass) {
-		ssrPass.setSize(params.width, params.height)
+		const dpr = window.devicePixelRatio
+
+		if (params.width !== lastWidth || params.height !== lastHeight) {
+			ssrPass.setSize(params.width * dpr, params.height * dpr)
+			lastWidth = params.width
+			lastHeight = params.height
+		}
 
 		for (const key of Object.keys(params)) {
 			if (key in ssrPass.reflectionUniforms) {
@@ -553,7 +568,10 @@ const loop = () => {
 		}
 
 		ssrPass.kawaseBlurPass.kernelSize = params.blurKernelSize
-		ssrPass.kawaseBlurPass.setSize(params.blurWidth, params.blurHeight)
+		ssrPass.kawaseBlurPass.setSize(
+			params.blurWidth * dpr,
+			params.blurHeight * dpr
+		)
 	}
 
 	composer.render()

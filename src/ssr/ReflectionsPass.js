@@ -1,7 +1,9 @@
 ﻿import { DepthPass, Pass, RenderPass } from "postprocessing"
 import {
+	FramebufferTexture,
 	NearestFilter,
 	NearestMipmapNearestFilter,
+	RGBAFormat,
 	Uniform,
 	WebGLMultipleRenderTargets,
 	WebGLRenderTarget
@@ -94,11 +96,27 @@ export class ReflectionsPass extends Pass {
 			this.normalTexture = this.gBuffersRenderTarget.texture
 			this.depthTexture = this.#webgl1DepthPass.texture
 		}
+
+		this.#createLastFramebufferTexture()
+	}
+
+	#createLastFramebufferTexture(
+		width = window.innerWidth,
+		height = window.innerHeight
+	) {
+		if (this.framebufferTexture !== undefined) this.framebufferTexture.dispose()
+
+		this.framebufferTexture = new FramebufferTexture(width, height, RGBAFormat)
+
+		this.framebufferTexture.minFilter = NearestFilter
+		this.framebufferTexture.magFilter = NearestFilter
 	}
 
 	setSize(width, height) {
 		this.renderTarget.setSize(width, height)
 		this.gBuffersRenderTarget.setSize(width, height)
+
+		this.#createLastFramebufferTexture(width, height)
 	}
 
 	#setNormalDepthRoughnessMaterialInScene() {
@@ -169,6 +187,11 @@ export class ReflectionsPass extends Pass {
 	}
 
 	render(renderer, inputBuffer) {
+		if (this.frameVal === undefined) this.frameVal = 1
+		this.frameVal = this.frameVal === 1 ? 2 : 1
+		// if (!window.o) this.frameVal++
+		// this.frameVal = 1
+
 		if (this.#webgl1DepthPass !== null) {
 			this.#webgl1DepthPass.renderPass.render(
 				renderer,
@@ -188,9 +211,12 @@ export class ReflectionsPass extends Pass {
 
 		this.#unsetNormalDepthRoughnessMaterialInScene()
 
-		// this.fullscreenMaterial.uniforms.inputBuffer.value = inputBuffer.texture
+		this.fullscreenMaterial.uniforms.inputBuffer.value = inputBuffer.texture
 		this.fullscreenMaterial.uniforms.normalBuffer.value = this.normalTexture
 		this.fullscreenMaterial.uniforms.depthBuffer.value = this.depthTexture
+		this.fullscreenMaterial.uniforms.frameVal.value = this.frameVal
+		this.fullscreenMaterial.uniforms.lastFrameReflectionsBuffer.value =
+			this.framebufferTexture
 		this.fullscreenMaterial.uniforms.cameraMatrixWorld.value =
 			this._camera.matrixWorld
 		this.fullscreenMaterial.uniforms._projectionMatrix.value =

@@ -8,15 +8,16 @@ export class SSRCompositeMaterial extends ShaderMaterial {
 
 			uniforms: {
 				inputBuffer: new Uniform(null),
+				lastFrameReflectionsBuffer: new Uniform(null),
 				reflectionsBuffer: new Uniform(null),
 				blurredReflectionsBuffer: new Uniform(null),
 				blurredReflectionsBuffer4: new Uniform(null),
-				testTex: new Uniform(null)
+				testTex: new Uniform(null),
+				samples: new Uniform(1)
 			},
 
 			defines: {
-				RENDER_MODE: 0,
-				USE_BLUR: ""
+				RENDER_MODE: 0
 			},
 
 			fragmentShader,

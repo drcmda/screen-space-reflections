@@ -51,6 +51,7 @@
 	},
 	"dependencies": {
 		"postprocessing": "^6.28.0",
+		"screen-space-reflections": "^1.0.7",
 		"three": "^0.141.0"
 	},
 	"prettier": {
