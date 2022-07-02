@@ -125,6 +125,7 @@ void main() {
     float reflectionMultiplier = max(0., screenEdgefactor);
 
     vec3 SSR = texture2D(inputBuffer, coords.xy).rgb;
+    SSR *= SSR;
     if (power != 1.) SSR = pow(SSR, vec3(power));
 
     float roughnessFactor = mix(specular, 1., max(0., 1. - roughnessFadeOut));
@@ -146,7 +147,7 @@ void main() {
     float blurMix = 0.;
 #ifdef USE_BLUR
     // increase the reflection blur the further away the reflecting object is
-    blurMix = reflectionDistance * depthBlur;
+    blurMix = sqrt(reflectionDistance) * depthBlur;
     if (blurMix > 1.) blurMix = 1.;
 #endif
 

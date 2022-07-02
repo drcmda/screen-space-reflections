@@ -11,7 +11,6 @@
 uniform sampler2D inputBuffer;
 uniform sampler2D reflectionsBuffer;
 uniform sampler2D blurredReflectionsBuffer;
-uniform sampler2D blurredReflectionsBuffer4;
 
 varying vec2 vUv;
 
@@ -32,7 +31,7 @@ void main() {
 #endif
 
 #if RENDER_MODE == MODE_DEFAULT
-    gl_FragColor = vec4(inputTexel.rgb + reflectionClr, 1.);
+    gl_FragColor = vec4(inputTexel.rgb + reflectionClr, blurMix);
 #endif
 
 #if RENDER_MODE == MODE_REFLECTIONS

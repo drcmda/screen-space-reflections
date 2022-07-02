@@ -540,7 +540,7 @@ const loop = () => {
 	if (skinMesh) {
 		mixer.update(dt)
 		skinMesh.updateMatrixWorld()
-		// skinMesh = null
+		skinMesh = null
 	}
 
 	if (ssrPass) {

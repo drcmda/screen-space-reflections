@@ -1,5 +1,12 @@
 ﻿import { KawaseBlurPass, KernelSize, Pass } from "postprocessing"
-import { LinearFilter, WebGLRenderTarget } from "three"
+import {
+	FramebufferTexture,
+	LinearFilter,
+	NearestFilter,
+	RGBAFormat,
+	Vector2,
+	WebGLRenderTarget
+} from "three"
 import { SSRCompositeMaterial } from "./material/SSRCompositeMaterial.js"
 import { ReflectionsPass } from "./ReflectionsPass.js"
 
@@ -70,6 +77,15 @@ export class SSRPass extends Pass {
 			options.blurHeight,
 			parameters
 		)
+
+		this.framebufferTexture = new FramebufferTexture(
+			window.innerWidth,
+			window.innerHeight,
+			RGBAFormat
+		)
+
+		this.framebufferTexture.minFilter = NearestFilter
+		this.framebufferTexture.magFilter = NearestFilter
 	}
 
 	setSize(width, height) {
@@ -81,6 +97,9 @@ export class SSRPass extends Pass {
 	}
 
 	render(renderer, inputBuffer, outputBuffer) {
+		this.reflectionsPass.fullscreenMaterial.uniforms.inputBuffer.value =
+			this.framebufferTexture
+
 		this.reflectionsPass.render(
 			renderer,
 			inputBuffer,
@@ -107,10 +126,10 @@ export class SSRPass extends Pass {
 			this.reflectionsPass.renderTarget.texture
 		this.fullscreenMaterial.uniforms.blurredReflectionsBuffer.value =
 			blurredReflectionsBuffer
-		this.fullscreenMaterial.uniforms._projectionMatrix.value =
-			this._camera.projectionMatrix
 
 		renderer.setRenderTarget(this.renderToScreen ? null : outputBuffer)
 		renderer.render(this.scene, this.camera)
+
+		renderer.copyFramebufferToTexture(new Vector2(), this.framebufferTexture)
 	}
 }

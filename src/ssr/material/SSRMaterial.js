@@ -10,6 +10,7 @@ export class SSRMaterial extends ShaderMaterial {
 
 			uniforms: {
 				inputBuffer: new Uniform(null),
+				lastFrameBuffer: new Uniform(null),
 				normalBuffer: new Uniform(null),
 				depthBuffer: new Uniform(null),
 				_projectionMatrix: new Uniform(new Matrix4()),
@@ -30,6 +31,12 @@ export class SSRMaterial extends ShaderMaterial {
 				jitterRough: new Uniform(0.5),
 				jitterSpread: new Uniform(1),
 				depthBlur: new Uniform(1)
+				// time: {
+				// 	get value() {
+				// 		return (Math.cos(performance.now() / 1000) + 1) / 2
+				// 	},
+				// 	set value(_) {}
+				// }
 			},
 
 			defines: {

@@ -188,7 +188,7 @@ export class ReflectionsPass extends Pass {
 
 		this.#unsetNormalDepthRoughnessMaterialInScene()
 
-		this.fullscreenMaterial.uniforms.inputBuffer.value = inputBuffer.texture
+		// this.fullscreenMaterial.uniforms.inputBuffer.value = inputBuffer.texture
 		this.fullscreenMaterial.uniforms.normalBuffer.value = this.normalTexture
 		this.fullscreenMaterial.uniforms.depthBuffer.value = this.depthTexture
 		this.fullscreenMaterial.uniforms.cameraMatrixWorld.value =
