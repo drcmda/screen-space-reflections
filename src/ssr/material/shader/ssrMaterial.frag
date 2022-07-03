@@ -22,7 +22,7 @@ uniform float rayFadeOut;
 uniform float thickness;
 uniform float ior;
 
-uniform float frameVal;
+uniform float samples;
 
 #ifdef USE_JITTERING
 uniform float jitter;
@@ -101,7 +101,7 @@ void main() {
     vec3 jitt = vec3(0.);
 
 #ifdef USE_JITTERING
-    vec3 randomJitter = hash(5. * (frameVal * worldPos + frameVal * viewNormal)) - vec3(0.5, 0.5, 0.5);
+    vec3 randomJitter = hash(5. * (samples * worldPos)) - vec3(0.5, 0.5, 0.5);
     float spread = ((2. - specular) + 0.05 * roughness * jitterRough) * jitterSpread;
     float jitterMix = jitter + jitterRough * roughness;
     if (jitterMix > 1.) jitterMix = 1.;

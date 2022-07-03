@@ -82,6 +82,11 @@ const controls = new OrbitControls(
 controls.maxDepth = 15
 window.controls = controls
 
+controls.addEventListener("change", () => {
+	ssrPass.reflectionsPass.samples = 1
+	ssrPass.reflectionsPass.createLastFramebufferTexture()
+})
+
 const composer = new POSTPROCESSING.EffectComposer(renderer, {
 	frameBufferType: HalfFloatType
 })
@@ -97,7 +102,7 @@ let params = {
 
 	width: window.innerWidth,
 	height: window.innerHeight,
-	useBlur: true,
+	useBlur: false,
 	blurKernelSize: 3,
 	blurWidth: 935,
 	blurHeight: 391,
@@ -106,7 +111,7 @@ let params = {
 	depthBlur: 0.26,
 	maxBlur: 0.85,
 	enableJittering: true,
-	jitter: 0,
+	jitter: 1,
 	jitterSpread: 2,
 	jitterRough: 2,
 	roughnessFadeOut: 1,
@@ -224,7 +229,7 @@ gltflLoader.load(useDesert ? "desert.glb" : "scene.glb", asset => {
 			roughness: 0
 		})
 	)
-	box.position.set(3, 1, 2)
+	box.position.set(4, 1, 4)
 	box.updateMatrixWorld()
 
 	const box2 = new THREE.Mesh(
@@ -298,6 +303,7 @@ const useVideoBackgroundAndDancer = () => {
 	video.src = "video.mp4"
 	video.playbackRate = 2
 	video.play()
+	window.video = video
 	const videoTexture = new THREE.VideoTexture(video)
 	emitterMesh.material.map = videoTexture
 
@@ -423,9 +429,9 @@ jitterFolder.addInput(params, "enableJittering").on("change", () => {
 	ssrPass.reflectionsPass.fullscreenMaterial.needsUpdate = true
 })
 
-jitterFolder.addInput(params, "jitter", { min: 0, max: 1, step: 0.01 })
+jitterFolder.addInput(params, "jitter", { min: 0, max: 3, step: 0.01 })
 jitterFolder.addInput(params, "jitterRough", { min: 0, max: 2, step: 0.01 })
-jitterFolder.addInput(params, "jitterSpread", { min: 0, max: 2, step: 0.01 })
+jitterFolder.addInput(params, "jitterSpread", { min: 0, max: 5, step: 0.01 })
 
 const definesFolder = pane.addFolder({ title: "Steps", expanded: false })
 
@@ -549,7 +555,7 @@ const loop = () => {
 	if (skinMesh) {
 		mixer.update(dt)
 		skinMesh.updateMatrixWorld()
-		// skinMesh = null
+		skinMesh = null
 	}
 
 	if (ssrPass) {

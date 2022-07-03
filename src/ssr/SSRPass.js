@@ -94,17 +94,31 @@ export class SSRPass extends Pass {
 			this.reflectionsPass.renderTarget
 		)
 
+		const samples = 16
+		const samplesVal = this.reflectionsPass.samples
+
 		// compose reflection of last and current frame into one reflection
 		this.composeReflectionsPass.fullscreenMaterial.uniforms.inputBuffer.value =
 			this.reflectionsPass.renderTarget.texture
 		this.composeReflectionsPass.fullscreenMaterial.uniforms.lastFrameReflectionsBuffer.value =
 			this.reflectionsPass.framebufferTexture
+		this.composeReflectionsPass.fullscreenMaterial.uniforms.samples.value =
+			samplesVal
 
 		this.composeReflectionsPass.render(
 			renderer,
 			this.reflectionsPass.renderTarget,
 			this.composeRenderTarget
 		)
+
+		// save reflections of last frame
+		if (this.reflectionsPass.samples < samples) {
+			renderer.setRenderTarget(this.composeReflectionsPass.renderTarget)
+			renderer.copyFramebufferToTexture(
+				zeroVec2,
+				this.reflectionsPass.framebufferTexture
+			)
+		}
 
 		const useBlur = "USE_BLUR" in this.fullscreenMaterial.defines
 
@@ -122,23 +136,13 @@ export class SSRPass extends Pass {
 			: null
 
 		this.fullscreenMaterial.uniforms.inputBuffer.value = inputBuffer.texture
-		this.fullscreenMaterial.uniforms.lastFrameReflectionsBuffer.value =
-			this.reflectionsPass.framebufferTexture
 		this.fullscreenMaterial.uniforms.reflectionsBuffer.value =
 			this.composeReflectionsPass.renderTarget.texture
 		this.fullscreenMaterial.uniforms.blurredReflectionsBuffer.value =
 			blurredReflectionsBuffer
-		this.fullscreenMaterial.uniforms.samples.value =
-			this.reflectionsPass.frameVal
+		this.fullscreenMaterial.uniforms.samples.value = samplesVal
 
 		renderer.setRenderTarget(this.renderToScreen ? null : outputBuffer)
 		renderer.render(this.scene, this.camera)
-
-		// save reflections of last frame
-		renderer.setRenderTarget(this.reflectionsPass.renderTarget)
-		renderer.copyFramebufferToTexture(
-			zeroVec2,
-			this.reflectionsPass.framebufferTexture
-		)
 	}
 }

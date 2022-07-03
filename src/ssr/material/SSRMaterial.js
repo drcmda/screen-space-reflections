@@ -31,7 +31,7 @@ export class SSRMaterial extends ShaderMaterial {
 				jitterSpread: new Uniform(1),
 				depthBlur: new Uniform(1),
 				maxBlur: new Uniform(1),
-				frameVal: new Uniform(0)
+				samples: new Uniform(0)
 			},
 
 			defines: {

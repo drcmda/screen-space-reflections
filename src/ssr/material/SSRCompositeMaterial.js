@@ -8,7 +8,6 @@ export class SSRCompositeMaterial extends ShaderMaterial {
 
 			uniforms: {
 				inputBuffer: new Uniform(null),
-				lastFrameReflectionsBuffer: new Uniform(null),
 				reflectionsBuffer: new Uniform(null),
 				blurredReflectionsBuffer: new Uniform(null),
 				blurredReflectionsBuffer4: new Uniform(null),

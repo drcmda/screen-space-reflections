@@ -25,22 +25,37 @@ export class ComposeReflectionsPass extends Pass {
 			type: "ComposeReflectionsMaterial",
 			uniforms: {
 				inputBuffer: new Uniform(null),
-				lastFrameReflectionsBuffer: new Uniform(null)
+				lastFrameReflectionsBuffer: new Uniform(null),
+				samples: new Uniform(null)
 			},
 			vertexShader,
 			fragmentShader: /* glsl */ `
+				#define EULER 2.718281828459045
+
                 uniform sampler2D inputBuffer;
                 uniform sampler2D lastFrameReflectionsBuffer;
 
-                uniform float samples;
+				uniform float samples;
 
                 varying vec2 vUv;
 
                 void main() {
                     vec4 inputTexel = texture2D(inputBuffer, vUv);
                     vec4 lastFrameReflectionsTexel = texture2D(lastFrameReflectionsBuffer, vUv);
+					
+					float mixVal = 1. / samples;
+					mixVal /= EULER;
 
-                    gl_FragColor = (inputTexel + lastFrameReflectionsTexel) / 2.;
+					vec3 newColor = mix(lastFrameReflectionsTexel.rgb, lastFrameReflectionsTexel.rgb + inputTexel.rgb, mixVal);
+					if(samples <= 2.) newColor = lastFrameReflectionsTexel.rgb + inputTexel.rgb;
+
+					if(length(lastFrameReflectionsTexel.rgb) < 0.001){
+						newColor = mix(lastFrameReflectionsTexel.rgb, lastFrameReflectionsTexel.rgb + inputTexel.rgb, 0.25);
+					}
+
+					float blurMix = mix(lastFrameReflectionsTexel.a, inputTexel.a + 0.5, mixVal);
+					
+					gl_FragColor = vec4(newColor, blurMix);
                 }
             `
 		})
