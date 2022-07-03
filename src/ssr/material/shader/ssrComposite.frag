@@ -13,8 +13,6 @@ uniform sampler2D reflectionsBuffer;
 uniform sampler2D blurredReflectionsBuffer;
 uniform float samples;
 
-#define SAMPLES 16.
-
 varying vec2 vUv;
 
 void main() {
@@ -22,8 +20,7 @@ void main() {
 
     vec4 reflectionsTexel = texture2D(reflectionsBuffer, vUv);
 
-    float sampleFactor = pow(log(SAMPLES * 16.) * 2., 1. / sqrt(samples));
-    vec3 reflectionClr = reflectionsTexel.xyz * sampleFactor;
+    vec3 reflectionClr = reflectionsTexel.xyz * 1.;
 
     float blurMix = 0.;
 

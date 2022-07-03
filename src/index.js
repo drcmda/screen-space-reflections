@@ -2,7 +2,6 @@ import * as POSTPROCESSING from "postprocessing"
 import Stats from "stats.js"
 import * as THREE from "three"
 import { HalfFloatType } from "three"
-import { FloatType } from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js"
@@ -79,12 +78,11 @@ const controls = new OrbitControls(
 	camera,
 	document.querySelector("#orbitControlsDomElem")
 )
-controls.maxDepth = 15
 window.controls = controls
 
 controls.addEventListener("change", () => {
 	ssrPass.reflectionsPass.samples = 1
-	ssrPass.reflectionsPass.createLastFramebufferTexture()
+	// ssrPass.reflectionsPass.createLastFramebufferTexture()
 })
 
 const composer = new POSTPROCESSING.EffectComposer(renderer, {
@@ -102,6 +100,8 @@ let params = {
 
 	width: window.innerWidth,
 	height: window.innerHeight,
+	temporalResolve: true,
+	staticNoise: false,
 	useBlur: false,
 	blurKernelSize: 3,
 	blurWidth: 935,
@@ -111,10 +111,10 @@ let params = {
 	depthBlur: 0.26,
 	maxBlur: 0.85,
 	enableJittering: true,
-	jitter: 1,
-	jitterSpread: 2,
+	jitter: 0.36,
 	jitterRough: 2,
-	roughnessFadeOut: 1,
+	jitterSpread: 3.37,
+	roughnessFadeOut: 0.51,
 	rayFadeOut: 1.03,
 	maxDepth: 1,
 	thickness: 3.5,
@@ -124,7 +124,7 @@ let params = {
 	NUM_BINARY_SEARCH_STEPS: 7,
 	maxDepthDifference: 3,
 	stretchMissedRays: false,
-	floorRoughness: 1.45,
+	floorRoughness: 2.6,
 	floorNormalScale: 0,
 	useMRT: true,
 	useNormalMap: true,
@@ -178,11 +178,7 @@ if (useDesert) {
 		111.09867225736214
 	)
 } else {
-	camera.position.set(
-		9.830958100630163,
-		1.0769590725793634,
-		0.43954473968492885
-	)
+	camera.position.set(11.002333350656253, 2.406571150547438, -2.833099999666251)
 	controls.target.set(
 		-0.0036586000844819433,
 		1.006404176473826,
@@ -363,6 +359,22 @@ renderModesList = optionsFolder
 		ssrPass.fullscreenMaterial.defines.RENDER_MODE = value
 		ssrPass.fullscreenMaterial.needsUpdate = true
 	})
+
+optionsFolder.addInput(params, "temporalResolve").on("change", () => {
+	if (params.temporalResolve) {
+		ssrPass.composeReflectionsPass.fullscreenMaterial.defines.TEMPORAL_RESOLVE =
+			""
+	} else {
+		delete ssrPass.composeReflectionsPass.fullscreenMaterial.defines
+			.TEMPORAL_RESOLVE
+	}
+
+	ssrPass.composeReflectionsPass.fullscreenMaterial.needsUpdate = true
+})
+
+optionsFolder.addInput(params, "staticNoise").on("change", () => {
+	ssrPass.reflectionsPass.staticNoise = params.staticNoise
+})
 
 optionsFolder.addInput(params, "width", { min: 0, max: 2000, step: 1 })
 optionsFolder.addInput(params, "height", { min: 0, max: 2000, step: 1 })
@@ -545,8 +557,17 @@ const clock = new THREE.Clock()
 let lastWidth
 let lastHeight
 
+let goRight = true
+
 const loop = () => {
 	const dt = clock.getDelta()
+
+	// const val = goRight ? 4 : -4
+	// camera.position.z += val * dt * 0.875
+	// if (Math.abs(Math.abs(val) < Math.abs(camera.position.z))) {
+	// 	camera.position.z = val
+	// 	goRight = !goRight
+	// }
 
 	stats.begin()
 

@@ -3,6 +3,7 @@ import { Vector2 } from "three"
 import { LinearFilter, WebGLRenderTarget } from "three"
 import { ComposeReflectionsPass } from "./ComposeReflectionsPass.js"
 import { SSRCompositeMaterial } from "./material/SSRCompositeMaterial.js"
+import { VelocityPass } from "./passes/VelocityPass.js"
 import { ReflectionsPass } from "./ReflectionsPass.js"
 
 const zeroVec2 = new Vector2()
@@ -76,6 +77,13 @@ export class SSRPass extends Pass {
 			options.blurHeight,
 			parameters
 		)
+
+		this.velocityPass = new VelocityPass(scene, camera)
+
+		this.temporalResolve = options.temporalResolve === true
+		if (this.temporalResolve)
+			this.composeReflectionsPass.fullscreenMaterial.defines.TEMPORAL_RESOLVE =
+				""
 	}
 
 	setSize(width, height) {
@@ -87,14 +95,14 @@ export class SSRPass extends Pass {
 	}
 
 	render(renderer, inputBuffer, outputBuffer) {
+		this.velocityPass.render(renderer, inputBuffer)
+
 		// render reflections of current frame
 		this.reflectionsPass.render(
 			renderer,
 			inputBuffer,
 			this.reflectionsPass.renderTarget
 		)
-
-		const samples = 16
 		const samplesVal = this.reflectionsPass.samples
 
 		// compose reflection of last and current frame into one reflection
@@ -102,6 +110,8 @@ export class SSRPass extends Pass {
 			this.reflectionsPass.renderTarget.texture
 		this.composeReflectionsPass.fullscreenMaterial.uniforms.lastFrameReflectionsBuffer.value =
 			this.reflectionsPass.framebufferTexture
+		this.composeReflectionsPass.fullscreenMaterial.uniforms.velocityBuffer.value =
+			this.velocityPass.renderTarget.texture
 		this.composeReflectionsPass.fullscreenMaterial.uniforms.samples.value =
 			samplesVal
 
@@ -112,13 +122,11 @@ export class SSRPass extends Pass {
 		)
 
 		// save reflections of last frame
-		if (this.reflectionsPass.samples < samples) {
-			renderer.setRenderTarget(this.composeReflectionsPass.renderTarget)
-			renderer.copyFramebufferToTexture(
-				zeroVec2,
-				this.reflectionsPass.framebufferTexture
-			)
-		}
+		renderer.setRenderTarget(this.composeReflectionsPass.renderTarget)
+		renderer.copyFramebufferToTexture(
+			zeroVec2,
+			this.reflectionsPass.framebufferTexture
+		)
 
 		const useBlur = "USE_BLUR" in this.fullscreenMaterial.defines
 

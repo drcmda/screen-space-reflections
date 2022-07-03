@@ -1,5 +1,4 @@
 ﻿import { DepthPass, Pass, RenderPass } from "postprocessing"
-import { FloatType } from "three"
 import {
 	FramebufferTexture,
 	NearestFilter,
@@ -19,6 +18,8 @@ export class ReflectionsPass extends Pass {
 	#options = {}
 	#useMRT = false
 	#webgl1DepthPass = null
+
+	staticNoise = false
 
 	constructor(scene, camera, options = {}) {
 		super("ReflectionsPass")
@@ -186,9 +187,13 @@ export class ReflectionsPass extends Pass {
 
 	render(renderer, inputBuffer) {
 		if (this.samples === undefined) this.samples = 1
-		// this.samples = this.samples === 1 ? 2 : 1
-		if (!window.o) this.samples++
-		if (this.samples >= 16) this.samples = 16
+
+		if (this.staticNoise) {
+			// this.samples = this.samples === 1 ? 2 : 1
+			this.samples = 1
+		} else {
+			this.samples++
+		}
 
 		if (this.#webgl1DepthPass !== null) {
 			this.#webgl1DepthPass.renderPass.render(

@@ -11,7 +11,6 @@ export class SSRCompositeMaterial extends ShaderMaterial {
 				reflectionsBuffer: new Uniform(null),
 				blurredReflectionsBuffer: new Uniform(null),
 				blurredReflectionsBuffer4: new Uniform(null),
-				testTex: new Uniform(null),
 				samples: new Uniform(1)
 			},
 

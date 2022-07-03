@@ -204,6 +204,8 @@ Here are two implementations for three.js and react-three-fiber:
 
 - SSR code: [Screen Space Reflections on Epsilon Engine](https://imanolfotia.com/blog/1)
 
+- Temporal Reprojection shader: [threejs-sandbox](https://github.com/gkjohnson/threejs-sandbox/blob/master/motionBlurPass/src/CompositeShader.js)
+
 - Edge fade for SSR: [kode80](http://kode80.com/blog/)
 
 - Colorful smoke picture: [Pawel Czerwinski](https://unsplash.com/@pawel_czerwinski)
